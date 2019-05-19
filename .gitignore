@@ -1,0 +1,6 @@
+/.idea/
+/out/
+/testdata/
+/*.iml
+JavaRushPlugin.properties
+/out.log
