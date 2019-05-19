@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<first>
+	<second>some string</second>
+	<second>some string</second>
+	<second>
+		<![CDATA[need CDATA because of < and >]]>
+	</second>
+	<second/>
+</first>
