@@ -2,6 +2,9 @@ package com.javarush.task.task35.task3507;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /* 
@@ -15,18 +18,55 @@ public class Solution {
     }
 
     public static Set<? extends Animal> getAllAnimals(String pathToAnimals) {
+        if (!pathToAnimals.endsWith("/")) {
+            pathToAnimals += "/";
+        }
         File catalog = new File(pathToAnimals);
-        try {
-            Class clazz2 = Class.forName("com\\javarush\\task\\task35\\task3507\\data\\Cat.class".replace("\\", ".").replace(".class", ""));
-            System.out.println("clazz2 = " + clazz2.getName());
-            for (File f : catalog.listFiles()) {
-                Class clazz = Class.forName(f.getName().replace(".class", ""));
-                System.out.println("clazz = " + clazz.getName());
+        String packageName = null;
+
+        Set<Animal> result = new HashSet<>();
+
+        for (File f : catalog.listFiles()) {
+            Class clazz = null;
+            if (packageName == null) {
+                packageName = getPackageName(f.getAbsolutePath());
             }
-        } catch (ClassNotFoundException e) {
-            System.out.println("Класс не найден: " + e.getMessage());
+            try {
+                clazz = Class.forName(packageName + f.getName().replace(".class", ""));
+                Class[] interfaces = clazz.getInterfaces();
+                if (Arrays.asList(interfaces).contains(Animal.class)) {
+                    Animal animal = (Animal) clazz.newInstance();
+                    result.add(animal);
+                }
+            } catch (ReflectiveOperationException e) {
+            }
         }
 
-        return null;
+
+        return result;
+    }
+
+    private static String getPackageName(String absolutePath) {
+        String packageName = "";
+        List<String> dirNames = Arrays.asList(absolutePath.split("\\\\"));
+        String className = dirNames.get(dirNames.size() - 1).replace(".class", "");
+        Class clazz = null;
+
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+        }
+
+        int i = dirNames.size() - 2;
+        while (clazz == null && i >= 0) {
+            try {
+                packageName = dirNames.get(i) + "." + packageName;
+                clazz = Class.forName(packageName + className);
+            } catch (ClassNotFoundException e) {
+            }
+            i--;
+        }
+
+        return packageName;
     }
 }
