@@ -10,5 +10,6 @@
     <orderEntry type="library" name="com.fasterxml.jackson.core:jackson-databind:2.9.7" level="project" />
     <orderEntry type="library" name="org.slf4j:slf4j-api:1.7.26" level="application" />
     <orderEntry type="library" name="slf4j-api-1.7.26" level="application" />
+    <orderEntry type="library" name="Simple Logging Facade for Java:1.7.26" level="application" />
   </component>
 </module>
