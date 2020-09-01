@@ -5,3 +5,4 @@
 JavaRushPlugin.properties
 /out.log
 *.jar
+*.log
