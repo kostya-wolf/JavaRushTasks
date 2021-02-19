@@ -1,6 +1,7 @@
 package com.javarush.task.task39.task3913;
 
 import com.javarush.task.task39.task3913.query.DateQuery;
+import com.javarush.task.task39.task3913.query.EventQuery;
 import com.javarush.task.task39.task3913.query.IPQuery;
 import com.javarush.task.task39.task3913.query.UserQuery;
 
@@ -14,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
     private Path logDir;
     private List<String> logs;
     private List<File> fileList;
@@ -280,4 +281,104 @@ public class LogParser implements IPQuery, UserQuery, DateQuery {
                 .findFirst()
                 .orElse(null);
     }
+
+    @Override
+    public int getNumberOfAllEvents(Date after, Date before) {
+        return getAllEvents(after, before).size();
+    }
+
+    @Override
+    public Set<Event> getAllEvents(Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .map(s -> Event.valueOf(s[3].split(" ")[0]))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Event> getEventsForIP(String ip, Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[0].equals(ip))
+                .map(s -> Event.valueOf(s[3].split(" ")[0]))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Event> getEventsForUser(String user, Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[1].equals(user))
+                .map(s -> Event.valueOf(s[3].split(" ")[0]))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Event> getFailedEvents(Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[4].equals(Status.FAILED.name()))
+                .map(s -> Event.valueOf(s[3].split(" ")[0]))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Event> getErrorEvents(Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[4].equals(Status.ERROR.name()))
+                .map(s -> Event.valueOf(s[3].split(" ")[0]))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public int getNumberOfAttemptToSolveTask(int task, Date after, Date before) {
+        return getTaskLogs(Event.SOLVE_TASK, task, after, before).size();
+    }
+
+    @Override
+    public int getNumberOfSuccessfulAttemptToSolveTask(int task, Date after, Date before) {
+        return getTaskLogs(Event.DONE_TASK, task, after, before).size();
+    }
+
+    @Override
+    public Map<Integer, Integer> getAllSolvedTasksAndTheirNumber(Date after, Date before) {
+        Set<Integer> tasks = getTaskForEventSet(Event.SOLVE_TASK, after, before);
+        return tasks.stream()
+                .collect(Collectors.toMap(
+                        t -> t,
+                        t -> getNumberOfAttemptToSolveTask(t, after, before)
+                ));
+    }
+
+    @Override
+    public Map<Integer, Integer> getAllDoneTasksAndTheirNumber(Date after, Date before) {
+        Set<Integer> tasks = getTaskForEventSet(Event.DONE_TASK, after, before);
+        return tasks.stream()
+                .collect(Collectors.toMap(
+                        t -> t,
+                        t -> getNumberOfSuccessfulAttemptToSolveTask(t, after, before)
+                ));
+    }
+
+    private List<String[]> getTaskLogs(Event event, int task, Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[3].equals(event + " " + task))
+                .collect(Collectors.toList());
+    }
+
+    private Set<Integer> getTaskForEventSet(Event event, Date after, Date before) {
+        return getTaskForEvenLogs(event, after, before).stream()
+                .map(s -> Integer.parseInt(s[3].split(" ")[1]))
+                .collect(Collectors.toSet());
+    }
+
+    private List<String[]> getTaskForEvenLogs(Event event, Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[3].split(" ")[0].equals(event.name()))
+                .collect(Collectors.toList());
+    }
+
 }
