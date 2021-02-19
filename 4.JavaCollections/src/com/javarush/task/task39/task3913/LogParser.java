@@ -1,5 +1,6 @@
 package com.javarush.task.task39.task3913;
 
+import com.javarush.task.task39.task3913.query.DateQuery;
 import com.javarush.task.task39.task3913.query.IPQuery;
 import com.javarush.task.task39.task3913.query.UserQuery;
 
@@ -10,16 +11,14 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class LogParser implements IPQuery, UserQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery {
     private Path logDir;
     private List<String> logs;
     private List<File> fileList;
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d.M.y H:m:s");
 
     public LogParser(Path logDir) {
         this.logDir = logDir;
@@ -103,7 +102,6 @@ public class LogParser implements IPQuery, UserQuery {
     }
 
     private List<String[]> getLogsAfterBefore(Date after, Date before) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("d.M.y H:m:s");
         LocalDateTime afterLCT = after == null ? LocalDateTime.MIN : after.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime beforeLCT = before == null ? LocalDateTime.MAX : before.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         return logs.stream()
@@ -199,5 +197,87 @@ public class LogParser implements IPQuery, UserQuery {
                 .filter(s -> s[3].startsWith(eventName))
                 .map(s -> s[1])
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Date> getDatesForUserAndEvent(String user, Event event, Date after, Date before) {
+        if (event == null) {
+            return new HashSet<>();
+        }
+        return getUserLogs(user, after, before)
+                .stream()
+                .filter(s -> s[3].split(" ")[0].equals(event.name()))
+                .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Date> getDatesWhenSomethingFailed(Date after, Date before) {
+        return getDatesWhenStatus(after, before, Status.FAILED.name());
+    }
+
+    @Override
+    public Set<Date> getDatesWhenErrorHappened(Date after, Date before) {
+        return getDatesWhenStatus(after, before, Status.ERROR.name());
+    }
+
+    @Override
+    public Date getDateWhenUserLoggedFirstTime(String user, Date after, Date before) {
+        return getDateWhenFirstTime(user, Event.LOGIN, after, before);
+    }
+
+    @Override
+    public Date getDateWhenUserSolvedTask(String user, int task, Date after, Date before) {
+        return getUserLogs(user, after, before)
+                .stream()
+                .filter(s -> s[3].equals(Event.SOLVE_TASK + " " + task))
+                .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
+                .sorted()
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public Date getDateWhenUserDoneTask(String user, int task, Date after, Date before) {
+        return getUserLogs(user, after, before)
+                .stream()
+                .filter(s -> s[3].equals(Event.DONE_TASK + " " + task))
+                .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
+                .sorted()
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public Set<Date> getDatesWhenUserWroteMessage(String user, Date after, Date before) {
+        return getDatesForUserAndEvent(user, Event.WRITE_MESSAGE, after, before);
+    }
+
+    @Override
+    public Set<Date> getDatesWhenUserDownloadedPlugin(String user, Date after, Date before) {
+        return getDatesForUserAndEvent(user, Event.DOWNLOAD_PLUGIN, after, before);
+    }
+
+    private Set<Date> getDatesWhenStatus(Date after, Date before, String status) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[4].equals(status))
+                .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
+                .collect(Collectors.toSet());
+    }
+
+    private List<String[]> getUserLogs(String user, Date after, Date before) {
+        return getLogsAfterBefore(after, before)
+                .stream()
+                .filter(s -> s[1].equals(user))
+                .collect(Collectors.toList());
+    }
+
+    public Date getDateWhenFirstTime(String user, Event event, Date after, Date before) {
+        return getDatesForUserAndEvent(user, event, after, before)
+                .stream()
+                .sorted()
+                .findFirst()
+                .orElse(null);
     }
 }
