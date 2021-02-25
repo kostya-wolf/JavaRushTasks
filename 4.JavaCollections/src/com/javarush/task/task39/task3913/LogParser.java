@@ -1,9 +1,6 @@
 package com.javarush.task.task39.task3913;
 
-import com.javarush.task.task39.task3913.query.DateQuery;
-import com.javarush.task.task39.task3913.query.EventQuery;
-import com.javarush.task.task39.task3913.query.IPQuery;
-import com.javarush.task.task39.task3913.query.UserQuery;
+import com.javarush.task.task39.task3913.query.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
     private Path logDir;
     private List<String> logs;
     private List<File> fileList;
@@ -338,7 +335,7 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
 
     @Override
     public int getNumberOfSuccessfulAttemptToSolveTask(int task, Date after, Date before) {
-        return getTaskLogs(Event.DONE_TASK, task, after, before).size();
+        return (int) getTaskLogs(Event.DONE_TASK, task, after, before).size();
     }
 
     @Override
@@ -381,4 +378,34 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Set<Object> execute(String query) {
+        String[] queryWords = query.split(" ");
+        if ("get".equals(queryWords[0]) && queryWords.length == 2) {
+            switch (queryWords[1]) {
+                case "ip": {
+                    return new HashSet<>(getUniqueIPs(null, null));
+                }
+                case "user": {
+                    return new HashSet<>(getAllUsers());
+                }
+                case "date": {
+                    return getLogsAfterBefore(null, null)
+                            .stream()
+                            .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
+                            .collect(Collectors.toSet());
+                }
+                case "event": {
+                    return new HashSet<>(getAllEvents(null, null));
+                }
+                case "status": {
+                    return getLogsAfterBefore(null, null)
+                            .stream()
+                            .map(s -> Status.valueOf(s[4]))
+                            .collect(Collectors.toSet());
+                }
+            }
+        }
+        return null;
+    }
 }
