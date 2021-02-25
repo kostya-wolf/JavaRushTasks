@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
@@ -380,32 +382,102 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
 
     @Override
     public Set<Object> execute(String query) {
-        String[] queryWords = query.split(" ");
-        if ("get".equals(queryWords[0]) && queryWords.length == 2) {
-            switch (queryWords[1]) {
-                case "ip": {
-                    return new HashSet<>(getUniqueIPs(null, null));
+        String[] queryWords = query.split(" ", 6);
+        Set<Object> result = null;
+        try {
+            if ("get".equals(queryWords[0])) {
+                if (queryWords.length == 2) {
+                    result = getSetForField1(queryWords[1]);
                 }
-                case "user": {
-                    return new HashSet<>(getAllUsers());
-                }
-                case "date": {
-                    return getLogsAfterBefore(null, null)
-                            .stream()
-                            .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
-                            .collect(Collectors.toSet());
-                }
-                case "event": {
-                    return new HashSet<>(getAllEvents(null, null));
-                }
-                case "status": {
-                    return getLogsAfterBefore(null, null)
-                            .stream()
-                            .map(s -> Status.valueOf(s[4]))
-                            .collect(Collectors.toSet());
+                if (queryWords.length >= 6) {
+                    result = getSetForField2(queryWords[1], queryWords[3], queryWords[5]);
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return null;
+        return result;
+    }
+
+    private Set<Object> getSetForField1(String field1) {
+        switch (field1) {
+            case "ip": {
+                return new HashSet<>(getUniqueIPs(null, null));
+            }
+            case "user": {
+                return new HashSet<>(getAllUsers());
+            }
+            case "date": {
+                return getLogsAfterBefore(null, null)
+                        .stream()
+                        .map(s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant()))
+                        .collect(Collectors.toSet());
+            }
+            case "event": {
+                return new HashSet<>(getAllEvents(null, null));
+            }
+            case "status": {
+                return getLogsAfterBefore(null, null)
+                        .stream()
+                        .map(s -> Status.valueOf(s[4]))
+                        .collect(Collectors.toSet());
+            }
+            default:
+                return null;
+        }
+    }
+
+    private Set<Object> getSetForField2(String field1, String field2, String value) {
+        Predicate<String[]> predicate = getFilterForField2AndValue(field2, value.substring(1, value.length() - 1));
+        Function<String[], Object> function = getMapFunctionForField1(field1);
+        return getLogsAfterBefore(null, null)
+                .stream()
+                .filter(predicate)
+                .map(function)
+                .collect(Collectors.toSet());
+    }
+
+    private Predicate<String[]> getFilterForField2AndValue(String field, String value) {
+        switch (field) {
+            case "ip": {
+                return s -> s[0].equals(value);
+            }
+            case "user": {
+                return s -> s[1].equals(value);
+            }
+            case "date": {
+                return s -> LocalDateTime.parse(s[2], dtf).isEqual(LocalDateTime.parse(value, dtf));
+            }
+            case "event": {
+                return s -> s[3].split(" ")[0].equals(value);
+            }
+            case "status": {
+                return s -> s[4].equals(value);
+            }
+            default:
+                return s -> false;
+        }
+    }
+
+    private Function<String[], Object> getMapFunctionForField1(String field) {
+        switch (field) {
+            case "ip": {
+                return s -> s[0];
+            }
+            case "user": {
+                return s -> s[1];
+            }
+            case "date": {
+                return s -> Date.from(LocalDateTime.parse(s[2], dtf).atZone(ZoneId.systemDefault()).toInstant());
+            }
+            case "event": {
+                return s -> Event.valueOf(s[3].split(" ")[0]);
+            }
+            case "status": {
+                return s -> Status.valueOf(s[4]);
+            }
+            default:
+                return s -> s;
+        }
     }
 }
