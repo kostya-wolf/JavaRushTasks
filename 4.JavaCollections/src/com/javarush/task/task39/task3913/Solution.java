@@ -48,5 +48,11 @@ public class Solution {
         System.out.println(logParser.execute("get ip for user = \"Eduard Petrovich Morozko\""));
         System.out.println(logParser.execute("get event for date = \"30.01.2014 12:56:22\""));
         System.out.println(logParser.execute("get user for event = \"DONE_TASK\""));
+        System.out.println(logParser.execute("get ip for user = \"Eduard Petrovich Morozko\" and date between \"11.12.2013 0:00:00\" and \"03.01.2014 23:59:59\""));
+        System.out.println(logParser.execute("get ip for event = \"DONE_TASK\""));
+        System.out.println(logParser.execute("get ip for event = \"DONE_TASK\" and date between \"11.12.2015 0:00:00\" and \"30.01.2022 23:59:59\""));
+        System.out.println(logParser.execute("get ip for status = \"ERROR\" and date between \"30.01.2014 12:56:21\" and \"30.01.2014 12:56:23\""));
+        System.out.println(logParser.execute("get date for event = \"DOWNLOAD_PLUGIN\" and date between \"11.12.2010 0:00:00\" and \"30.01.2022 23:59:59\""));
+        System.out.println(logParser.execute("get date for event = \"DOWNLOAD_PLUGIN\""));
     }
 }

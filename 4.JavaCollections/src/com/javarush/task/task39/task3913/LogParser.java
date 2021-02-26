@@ -12,6 +12,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
@@ -109,6 +111,16 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
                         || LocalDateTime.parse(s.split("\t")[2], dtf).isEqual(afterLCT))
                 .filter(s -> LocalDateTime.parse(s.split("\t")[2], dtf).isBefore(beforeLCT)
                         || LocalDateTime.parse(s.split("\t")[2], dtf).isEqual(beforeLCT))
+                .map(s -> s.split("\t"))
+                .collect(Collectors.toList());
+    }
+
+    private List<String[]> getLogsAfterBeforeWithoutBoundaryDates(Date after, Date before) {
+        LocalDateTime afterLCT = after == null ? LocalDateTime.MIN : after.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime beforeLCT = before == null ? LocalDateTime.MAX : before.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return logs.stream()
+                .filter(s -> LocalDateTime.parse(s.split("\t")[2], dtf).isAfter(afterLCT))
+                .filter(s -> LocalDateTime.parse(s.split("\t")[2], dtf).isBefore(beforeLCT))
                 .map(s -> s.split("\t"))
                 .collect(Collectors.toList());
     }
@@ -337,7 +349,7 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
 
     @Override
     public int getNumberOfSuccessfulAttemptToSolveTask(int task, Date after, Date before) {
-        return (int) getTaskLogs(Event.DONE_TASK, task, after, before).size();
+        return getTaskLogs(Event.DONE_TASK, task, after, before).size();
     }
 
     @Override
@@ -390,7 +402,21 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
                     result = getSetForField1(queryWords[1]);
                 }
                 if (queryWords.length >= 6) {
-                    result = getSetForField2(queryWords[1], queryWords[3], queryWords[5]);
+                    Pattern pattern = Pattern.compile("\"(.*?)\"");
+                    Matcher matcher = pattern.matcher(query);
+                    String value = null;
+                    Date after = null;
+                    Date before = null;
+                    if (matcher.find()) {
+                        value = matcher.group(1);
+                    }
+                    if (matcher.find()) {
+                        after = getDateFrom(matcher.group(1));
+                    }
+                    if (matcher.find()) {
+                        before = getDateFrom(matcher.group(1));
+                    }
+                    result = getSetForField2(queryWords[1], queryWords[3], value, after, before);
                 }
             }
         } catch (Exception e) {
@@ -427,10 +453,10 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
         }
     }
 
-    private Set<Object> getSetForField2(String field1, String field2, String value) {
-        Predicate<String[]> predicate = getFilterForField2AndValue(field2, value.substring(1, value.length() - 1));
+    private Set<Object> getSetForField2(String field1, String field2, String value, Date after, Date before) {
+        Predicate<String[]> predicate = getFilterForField2AndValue(field2, value);
         Function<String[], Object> function = getMapFunctionForField1(field1);
-        return getLogsAfterBefore(null, null)
+        return getLogsAfterBeforeWithoutBoundaryDates(after, before)
                 .stream()
                 .filter(predicate)
                 .map(function)
@@ -479,5 +505,9 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
             default:
                 return s -> s;
         }
+    }
+
+    private Date getDateFrom(String date) {
+        return Date.from(LocalDateTime.parse(date, dtf).atZone(ZoneId.systemDefault()).toInstant());
     }
 }
