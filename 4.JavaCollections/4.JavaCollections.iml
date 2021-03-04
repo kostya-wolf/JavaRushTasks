@@ -14,5 +14,6 @@
     <orderEntry type="library" name="com.google.guava:guava:19.0" level="application" />
     <orderEntry type="library" name="org.apache.commons:commons-collections4:4.0" level="application" />
     <orderEntry type="library" name="junit:junit:4.12" level="application" />
+    <orderEntry type="library" name="org.powermock:powermock-core:2.0.9" level="application" />
   </component>
 </module>
