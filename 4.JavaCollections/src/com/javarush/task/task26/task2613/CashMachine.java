@@ -9,5 +9,6 @@ public class CashMachine {
         String[] nominalAndCount = ConsoleHelper.getValidTwoDigits(curCode);
         CurrencyManipulator curMan = CurrencyManipulatorFactory.getManipulatorByCurrencyCode(curCode);
         curMan.addAmount(Integer.parseInt(nominalAndCount[0]), Integer.parseInt(nominalAndCount[1]));
+        System.out.println(curMan.getTotalAmount());
     }
 }
