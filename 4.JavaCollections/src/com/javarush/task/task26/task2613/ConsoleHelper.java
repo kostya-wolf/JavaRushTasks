@@ -55,4 +55,23 @@ public class ConsoleHelper {
             return false;
         }
     }
+
+    public static Operation askOperation() {
+        writeMessage("Введите код операции (1 - INFO, 2 - DEPOSIT, 3 - WITHDRAW, 4 - EXIT)");
+        String opCode = readString();
+        while (!isOperaionCodeValid(opCode)) {
+            writeMessage("Данные некорректны. Введите код операции");
+            opCode = readString();
+        }
+        return Operation.getAllowableOperationByOrdinal(Integer.parseInt(opCode));
+    }
+
+    private static boolean isOperaionCodeValid(String opCode) {
+        try {
+            Operation.getAllowableOperationByOrdinal(Integer.parseInt(opCode));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
