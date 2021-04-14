@@ -13,6 +13,7 @@ public class CommandExecutor {
 
     static {
         allKnownCommandsMap = new HashMap<>();
+        allKnownCommandsMap.put(LOGIN, new LoginCommand());
         allKnownCommandsMap.put(INFO, new InfoCommand());
         allKnownCommandsMap.put(DEPOSIT, new DepositCommand());
         allKnownCommandsMap.put(WITHDRAW, new WithdrawCommand());
@@ -20,7 +21,6 @@ public class CommandExecutor {
     }
 
     private CommandExecutor() {
-        throw new UnsupportedOperationException();
     }
 
     public static final void execute(Operation operation) throws InterruptOperationException {
