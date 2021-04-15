@@ -1,16 +1,26 @@
 package com.javarush.task.task26.task2613.command;
 
+import com.javarush.task.task26.task2613.CashMachine;
 import com.javarush.task.task26.task2613.ConsoleHelper;
 import com.javarush.task.task26.task2613.CurrencyManipulator;
 import com.javarush.task.task26.task2613.CurrencyManipulatorFactory;
 import com.javarush.task.task26.task2613.exception.InterruptOperationException;
 
+import java.util.ResourceBundle;
+
 class DepositCommand implements Command {
+    private ResourceBundle res =
+            ResourceBundle.getBundle(CashMachine.class.getPackage().getName() + ".resources.deposit");
+
     @Override
     public void execute() throws InterruptOperationException {
+        ConsoleHelper.writeMessage(res.getString("before"));
         String curCode = ConsoleHelper.askCurrencyCode();
-        String[] nominalAndCount = ConsoleHelper.getValidTwoDigits(curCode);
+        String[] nominalAndCount = ConsoleHelper.getValidTwoDigits(res.getString("invalid.data"));
         CurrencyManipulator curMan = CurrencyManipulatorFactory.getManipulatorByCurrencyCode(curCode);
-        curMan.addAmount(Integer.parseInt(nominalAndCount[0]), Integer.parseInt(nominalAndCount[1]));
+        int denomination = Integer.parseInt(nominalAndCount[0]);
+        int count = Integer.parseInt(nominalAndCount[1]);
+        curMan.addAmount(denomination, count);
+        ConsoleHelper.writeMessage(String.format(res.getString("success.format"), denomination * count, curCode));
     }
 }

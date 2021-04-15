@@ -40,11 +40,11 @@ public class ConsoleHelper {
         return curCode.length() == 3;
     }
 
-    public static String[] getValidTwoDigits(String currencyCode) throws InterruptOperationException {
+    public static String[] getValidTwoDigits(String wrongData) throws InterruptOperationException {
         writeMessage("Введите два целых положительных числа - номинал и количество банкнот");
         String nominalAndCount = readString();
         while (!isNominalAndCountValid(nominalAndCount)) {
-            writeMessage("Данные некорректны. Введите два целых положительных числа - номинал и количество банкнот");
+            writeMessage(wrongData);
             nominalAndCount = readString();
         }
         return nominalAndCount.split(" ");
