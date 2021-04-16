@@ -7,44 +7,49 @@ import com.javarush.task.task26.task2613.exception.InterruptOperationException;
 import java.util.ResourceBundle;
 
 public class LoginCommand implements Command {
-    private static final String cardNumber = "123456789012";
-    private static final String cardPin = "1234";
     private ResourceBundle validCreditCards = ResourceBundle.getBundle(CashMachine.class.getPackage().getName() + ".resources.verifiedCards");
+    private ResourceBundle res = ResourceBundle.getBundle(CashMachine.class.getPackage().getName() + ".resources.login");
 
     @Override
     public void execute() throws InterruptOperationException {
+        ConsoleHelper.writeMessage(res.getString("before"));
         boolean loginDenied = true;
         do {
             String[] cardNumAndPin = getValidCardNumAndPin();
             if (validCreditCards.containsKey(cardNumAndPin[0])
                     && validCreditCards.getString(cardNumAndPin[0]).equals(cardNumAndPin[1])) {
-                ConsoleHelper.writeMessage("Верификация прошла успешно");
                 loginDenied = false;
+                ConsoleHelper.writeMessage(String.format(res.getString("success.format"), cardNumAndPin[0]));
+            } else {
+                ConsoleHelper.writeMessage(String.format(res.getString("not.verified.format"), cardNumAndPin[0]));
+                ConsoleHelper.writeMessage(res.getString("try.again.or.exit"));
             }
         } while (loginDenied);
     }
 
-    private static String[] getValidCardNumAndPin() throws InterruptOperationException {
-        ConsoleHelper.writeMessage("Введите номер карты (12 цифр)");
+    private String[] getValidCardNumAndPin() throws InterruptOperationException {
+        ConsoleHelper.writeMessage(res.getString("specify.data"));
         String cardNum = ConsoleHelper.readString();
         while (!isCardNumValid(cardNum)) {
-            ConsoleHelper.writeMessage("Данные не валидны. Введите номер карты (12 цифр)");
+            ConsoleHelper.writeMessage(res.getString("try.again.with.details"));
+            ConsoleHelper.writeMessage(res.getString("try.again.or.exit"));
             cardNum = ConsoleHelper.readString();
         }
         ConsoleHelper.writeMessage("Введите пин (4 цифры)");
         String cardPin = ConsoleHelper.readString();
         while (!isCardPinValid(cardPin)) {
-            ConsoleHelper.writeMessage("Данные не валидны. Введите пин (4 цифры)");
+            ConsoleHelper.writeMessage(res.getString("try.again.with.details"));
+            ConsoleHelper.writeMessage(res.getString("try.again.or.exit"));
             cardPin = ConsoleHelper.readString();
         }
         return new String[]{cardNum, cardPin};
     }
 
-    private static boolean isCardNumValid(String cardNum) {
+    private boolean isCardNumValid(String cardNum) {
         return cardNum.length() == 12;
     }
 
-    private static boolean isCardPinValid(String cardPin) {
+    private boolean isCardPinValid(String cardPin) {
         return cardPin.length() == 4;
     }
 }

@@ -16,7 +16,7 @@ class DepositCommand implements Command {
     public void execute() throws InterruptOperationException {
         ConsoleHelper.writeMessage(res.getString("before"));
         String curCode = ConsoleHelper.askCurrencyCode();
-        String[] nominalAndCount = ConsoleHelper.getValidTwoDigits(res.getString("invalid.data"));
+        String[] nominalAndCount = ConsoleHelper.getValidTwoDigits(curCode);
         CurrencyManipulator curMan = CurrencyManipulatorFactory.getManipulatorByCurrencyCode(curCode);
         int denomination = Integer.parseInt(nominalAndCount[0]);
         int count = Integer.parseInt(nominalAndCount[1]);
