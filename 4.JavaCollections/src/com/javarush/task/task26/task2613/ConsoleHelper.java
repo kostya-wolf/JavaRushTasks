@@ -8,9 +8,11 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
+import static com.javarush.task.task26.task2613.CashMachine.RESOURCE_PATH;
+
 public class ConsoleHelper {
     private static BufferedReader bis = new BufferedReader(new InputStreamReader(System.in));
-    private static ResourceBundle res = ResourceBundle.getBundle(CashMachine.class.getPackage().getName() + ".resources.common");
+    private static ResourceBundle res = ResourceBundle.getBundle(RESOURCE_PATH + "common");
 
     public static void writeMessage(String message) {
         System.out.println(message);
@@ -83,5 +85,9 @@ public class ConsoleHelper {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static void printExitMessage() {
+        writeMessage("До свидания!");
     }
 }
