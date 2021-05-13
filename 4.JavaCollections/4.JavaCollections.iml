@@ -17,5 +17,6 @@
     <orderEntry type="library" name="org.powermock:powermock-core:2.0.9" level="application" />
     <orderEntry type="library" name="org.jsoup:jsoup:1.9.2" level="project" />
     <orderEntry type="library" name="org.apache.httpcomponents:httpclient:4.5.13" level="project" />
+    <orderEntry type="library" name="javamail-1.4" level="project" />
   </component>
 </module>
