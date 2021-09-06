@@ -32,4 +32,7 @@ public class Model {
         this.currentLevel++;
         restart();
     }
+
+    public void move(Direction direction) {
+    }
 }
