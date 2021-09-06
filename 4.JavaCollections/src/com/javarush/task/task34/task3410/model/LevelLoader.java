@@ -21,6 +21,7 @@ public class LevelLoader {
         Box box = new Box(200, 200);
         Home home = new Home(100, 100);
         Player player = new Player(250, 250);
-        return new GameObjects(walls, Collections.singleton(box), Collections.singleton(home), player);
+        GameObjects gameObjects = new GameObjects(walls, Collections.singleton(box), Collections.singleton(home), player);
+        return gameObjects;
     }
 }
