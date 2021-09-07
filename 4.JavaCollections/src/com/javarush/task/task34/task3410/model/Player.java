@@ -1,7 +1,6 @@
 package com.javarush.task.task34.task3410.model;
 
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 
 public class Player extends CollisionObject implements Movable {
     public Player(int x, int y) {
