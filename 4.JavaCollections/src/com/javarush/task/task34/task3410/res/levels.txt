@@ -44,7 +44,7 @@ Size X: 17
 Size Y: 10
 End: 150D
 Length: 37
-
+X
         XXXXXXXX 
         X     @X 
         X *X* XX 
